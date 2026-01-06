@@ -21,7 +21,15 @@
 }
 
 *{box-sizing:border-box;}
-body{
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
+</script>
+
+  body{
   margin:0;
   font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
   background:var(--bg);
@@ -1192,4 +1200,5 @@ updateFilterVisibility();
 </script>
 </body>
 </html>
+
 
