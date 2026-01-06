@@ -1,12 +1,14 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2F5D50">
-
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>holistic nft tracking</title>
+<title>Holistic nft tracking</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2F5D50">
+
 <style>
 :root{
   --bg:#ffffff;
@@ -18,44 +20,36 @@
   --warning:#C97A3D;
   --line:#e5e7eb;
   --card:#f7faf9;
+
+  /* 잎처짐 컬러(1=풀색, 5=갈색) */
+  --droop1:#B7F7B0; /* bright grass */
+  --droop2:#D8F4A5; /* yellow-green */
+  --droop3:#FFE08A; /* warm yellow */
+  --droop4:#F6B26B; /* orange */
+  --droop5:#9C5A3C; /* brown */
 }
 
 *{box-sizing:border-box;}
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js");
-  });
-}
-</script>
-
-  body{
+body{
   margin:0;
   font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
   background:var(--bg);
   color:var(--text);
 }
-.container{ max-width:1200px; margin:0 auto; padding:22px; }
+.container{ max-width:1200px; margin:0 auto; padding:18px; }
 
 header{
   display:flex; justify-content:space-between; align-items:center;
-  gap:14px; margin-bottom:22px;
+  gap:10px; margin-bottom:16px;
 }
-h1{ margin:0; font-size:34px; font-weight:500; letter-spacing:.2px; }
+h1{ margin:0; font-size:30px; font-weight:500; letter-spacing:.2px; }
 
-.topRight{ display:flex; align-items:center; gap:14px; }
-.pill{
-  border:1px solid var(--line);
-  background:var(--card);
-  padding:8px 10px;
-  border-radius:10px;
-  font-size:13px;
-  color:var(--muted);
-}
+.topRight{ display:flex; align-items:center; gap:10px; }
 
 .toggle{
   display:flex; align-items:center; gap:8px;
   font-size:14px; color:var(--muted);
+  white-space:nowrap;
 }
 .toggle input{
   width:44px; height:24px; appearance:none; cursor:pointer;
@@ -70,14 +64,19 @@ h1{ margin:0; font-size:34px; font-weight:500; letter-spacing:.2px; }
 }
 .toggle input:checked::after{ left:22px; }
 
-.section{ margin-bottom:22px; }
+.section{ margin-bottom:18px; }
 .label{ font-size:13px; color:var(--muted); margin-bottom:8px; }
-.row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
+.row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:10px;
+}
 
 .cell{
   border:1px solid var(--line);
-  border-radius:10px;
+  border-radius:12px;
   padding:10px;
   background:#fff;
 }
@@ -92,7 +91,7 @@ input[type="number"], input[type="date"], textarea, select{
   width:100%;
   padding:10px 12px;
   border:1px solid var(--line);
-  border-radius:10px;
+  border-radius:12px;
   font-size:14px;
   background:#fff;
 }
@@ -127,7 +126,18 @@ button:active{ transform:translateY(1px); }
 .smallNote{ font-size:12px; color:var(--muted); }
 .hidden{ display:none !important; }
 
-/* view */
+.inlineCalc{
+  margin-top:10px;
+  padding:10px 12px;
+  border:1px dashed rgba(47,93,80,.35);
+  border-radius:12px;
+  background:#f7fbfa;
+  font-size:13px;
+  color:#134e4a;
+}
+.inlineCalc b{ color:var(--primary); }
+
+/* ===== 기록보기 ===== */
 .viewCard{
   border:1px solid var(--line);
   border-radius:14px;
@@ -158,7 +168,8 @@ button:active{ transform:translateY(1px); }
   border-radius:14px;
   padding:10px;
 }
-canvas{ width:100%; height:340px; display:block; }
+canvas{ width:100%; height:320px; display:block; }
+
 .tooltip{
   position:absolute;
   pointer-events:none;
@@ -242,6 +253,26 @@ canvas{ width:100%; height:340px; display:block; }
 .symOn{ color:var(--primary); }
 .symOff{ color:#c7d0d8; }
 
+/* droop table circle */
+.droopDot{
+  width:18px; height:18px;
+  border-radius:50%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:700;
+  color:#0f172a;
+  border:1px solid rgba(15,23,42,.18);
+}
+.droopEmpty{
+  width:18px; height:18px;
+  border-radius:50%;
+  display:inline-block;
+  border:2px solid #c7d0d8;
+  background:transparent;
+}
+
 /* memo dropdown list */
 .memoList{ margin-top:14px; }
 .memoItem{
@@ -279,17 +310,14 @@ canvas{ width:100%; height:340px; display:block; }
 details[open] .memoArrow{ transform:rotate(90deg); }
 .memoEmpty{ color:#6b7280; }
 
-.inlineCalc{
-  margin-top:10px;
-  padding:10px 12px;
-  border:1px dashed rgba(47,93,80,.35);
-  border-radius:12px;
-  background:#f7fbfa;
-  font-size:13px;
-  color:#134e4a;
+/* ===== 모바일: 12개 입력 그리드 = 4x3 ===== */
+@media (max-width: 720px){
+  .container{ padding:14px; }
+  h1{ font-size:24px; }
+  .row{ grid-template-columns:1fr; }
+  .grid{ grid-template-columns:repeat(4, 1fr); }
+  canvas{ height:300px; }
 }
-.inlineCalc b{ color:var(--primary); }
-
 </style>
 </head>
 
@@ -299,7 +327,6 @@ details[open] .memoArrow{ transform:rotate(90deg); }
 <header>
   <h1>holistic nft tracking</h1>
   <div class="topRight">
-    <div class="pill">저장소: localStorage</div>
     <div class="toggle">
       기록하기
       <input id="modeToggle" type="checkbox" />
@@ -331,7 +358,7 @@ details[open] .memoArrow{ transform:rotate(90deg); }
       <input id="tankRight" placeholder="우측" type="number" />
     </div>
     <div class="inlineCalc" id="consumptionHint">
-      전날 물통무게랑 비교해서 <b>추정 물 소비량</b>을 표시할 거야. (저장 후 기록보기에서 그래프도 생성)
+      전날 물통무게랑 비교해서 <b>추정 물 소비량</b>을 표시할 거야.
     </div>
   </div>
 
@@ -354,8 +381,11 @@ details[open] .memoArrow{ transform:rotate(90deg); }
   </div>
 
   <div class="section">
-    <div class="label">잎처짐 (1~5) — 그래프 제외</div>
+    <div class="label">잎처짐 (1~5) — 색상 적용 / 기록보기에서는 표로</div>
     <div class="grid" id="droopGrid"></div>
+    <div class="smallNote" style="margin-top:8px;">
+      1=가장 안 쳐짐(풀색) → 5=가장 쳐짐(갈색)
+    </div>
   </div>
 
   <div class="section">
@@ -415,7 +445,7 @@ details[open] .memoArrow{ transform:rotate(90deg); }
       <div class="filtersTitle">표시 토글</div>
       <div class="checkRow" id="waterEcChecks"></div>
       <div class="smallNote" style="margin-top:8px;">
-        물 소비량은 전날 대비 “물통무게 감소량(g)”으로 계산(=mL로 보면 대충 1g≈1mL 가정).
+        물 소비량 = 전날 물통무게 - 오늘 물통무게 (g). (대충 1g≈1mL로 보면 됨)
       </div>
     </div>
 
@@ -428,6 +458,10 @@ details[open] .memoArrow{ transform:rotate(90deg); }
         <div class="label" style="margin:10px 0 8px;">착과 여부 표</div>
         <div class="tableWrap" id="fruitTableWrap"></div>
       </div>
+      <div>
+        <div class="label" style="margin:10px 0 8px;">잎처짐 표 (1~5)</div>
+        <div class="tableWrap" id="droopTableWrap"></div>
+      </div>
     </div>
 
     <div class="memoList" id="memoList"></div>
@@ -438,7 +472,7 @@ details[open] .memoArrow{ transform:rotate(90deg); }
 
 <script>
 /* ===== storage ===== */
-const STORAGE_KEY = "hnt_records_v2";
+const STORAGE_KEY = "hnt_records_v3";
 
 function loadAll(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
@@ -467,8 +501,33 @@ function toNum(v){
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
+function clampInt(v, min, max){
+  if(v == null) return null;
+  const n = Math.round(Number(v));
+  if(!Number.isFinite(n)) return null;
+  return Math.max(min, Math.min(max, n));
+}
 function getSortedDates(all){
   return Object.keys(all).sort();
+}
+function loadByDate(iso){
+  const all = loadAll();
+  return all[iso] || null;
+}
+
+/* ===== droop color mapping ===== */
+function droopColor(score){
+  switch(score){
+    case 1: return getCss("--droop1");
+    case 2: return getCss("--droop2");
+    case 3: return getCss("--droop3");
+    case 4: return getCss("--droop4");
+    case 5: return getCss("--droop5");
+    default: return null;
+  }
+}
+function getCss(varName){
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
 }
 
 /* ===== build grids ===== */
@@ -503,6 +562,7 @@ function makeCheckGrid(containerId, inputPrefix){
     grid.appendChild(cell);
   }
 }
+
 makeNumberGrid("leafGrid", "leaf_", {});
 makeNumberGrid("heightGrid", "height_", {});
 makeNumberGrid("droopGrid", "droop_", {min:1, max:5, step:1});
@@ -522,11 +582,9 @@ function buildPlantChecks(){
 }
 buildPlantChecks();
 
-/* ===== water+ec toggle ===== */
+/* ===== water+ec toggles ===== */
 const waterEcChecksBox = document.getElementById("waterEcChecks");
-const WATER_EC_TOGGLES = {
-  waterL: true, waterR: true, ecL: true, ecR: true
-};
+const WATER_EC_TOGGLES = { waterL:true, waterR:true, ecL:true, ecR:true };
 function buildWaterEcChecks(){
   waterEcChecksBox.innerHTML = "";
   const items = [
@@ -560,9 +618,24 @@ const memoInput = document.getElementById("memoInput");
 const saveMsg = document.getElementById("saveMsg");
 const consumptionHint = document.getElementById("consumptionHint");
 
-function loadByDate(iso){
-  const all = loadAll();
-  return all[iso] || null;
+function updateDroopCellUI(i){
+  const input = document.getElementById(`droop_${i}`);
+  const cell = input.closest(".cell");
+  const score = clampInt(toNum(input.value), 1, 5);
+  if(!score){
+    cell.style.background = "#fff";
+    cell.style.borderColor = getCss("--line");
+    return;
+  }
+  const c = droopColor(score);
+  cell.style.background = c;
+  cell.style.borderColor = "rgba(15,23,42,.18)";
+}
+
+for(let i=1;i<=12;i++){
+  const input = document.getElementById(`droop_${i}`);
+  input.addEventListener("input", ()=>updateDroopCellUI(i));
+  input.addEventListener("change", ()=>updateDroopCellUI(i));
 }
 
 function getFormData(){
@@ -571,7 +644,7 @@ function getFormData(){
     plants[i] = {
       leaf: toNum(document.getElementById(`leaf_${i}`).value),
       height: toNum(document.getElementById(`height_${i}`).value),
-      droop: toNum(document.getElementById(`droop_${i}`).value),
+      droop: clampInt(toNum(document.getElementById(`droop_${i}`).value), 1, 5),
       flower: document.getElementById(`flower_${i}`).checked,
       fruit: document.getElementById(`fruit_${i}`).checked,
     };
@@ -585,7 +658,6 @@ function getFormData(){
     updatedAt: new Date().toISOString(),
   };
 }
-
 function setFormData(rec){
   tankLeft.value = rec?.tankWeight?.left ?? "";
   tankRight.value = rec?.tankWeight?.right ?? "";
@@ -600,10 +672,10 @@ function setFormData(rec){
     document.getElementById(`droop_${i}`).value = (p.droop ?? "");
     document.getElementById(`flower_${i}`).checked = !!p.flower;
     document.getElementById(`fruit_${i}`).checked = !!p.fruit;
+    updateDroopCellUI(i);
   }
-  updateConsumptionHint(); // refresh
+  updateConsumptionHint();
 }
-
 function clearForm(){
   tankLeft.value = "";
   tankRight.value = "";
@@ -616,20 +688,9 @@ function clearForm(){
     document.getElementById(`droop_${i}`).value = "";
     document.getElementById(`flower_${i}`).checked = false;
     document.getElementById(`fruit_${i}`).checked = false;
+    updateDroopCellUI(i);
   }
   updateConsumptionHint();
-}
-
-function computeConsumptionForDate(all, iso){
-  // consumption = prevWeight - currentWeight (positive -> consumed)
-  const prevIso = isoMinusDays(iso, 1);
-  const prev = all[prevIso]?.tankWeight || {};
-  const cur = all[iso]?.tankWeight || {};
-  const out = { left: null, right: null, prevIso };
-
-  if(prev.left != null && cur.left != null) out.left = prev.left - cur.left;
-  if(prev.right != null && cur.right != null) out.right = prev.right - cur.right;
-  return out;
 }
 
 function updateConsumptionHint(){
@@ -652,7 +713,7 @@ function updateConsumptionHint(){
 
   const fmt = (v)=> {
     if(v == null) return "-";
-    const sign = v >= 0 ? "" : "▲"; // 음수면 증가(보충)
+    const sign = v >= 0 ? "" : "▲";
     const abs = Math.abs(v);
     return `${sign}${abs.toFixed(0)} g`;
   };
@@ -663,7 +724,6 @@ function updateConsumptionHint(){
        감소(+) = 소비, 증가(▲) = 보충/주입 등으로 무게가 늘어난 케이스.
      </div>`;
 }
-
 [tankLeft, tankRight, dateInput].forEach(el=>{
   el.addEventListener("input", updateConsumptionHint);
   el.addEventListener("change", updateConsumptionHint);
@@ -681,7 +741,6 @@ function saveCurrent(){
   saveMsg.textContent = `저장됨: ${rec.date}`;
   updateConsumptionHint();
 }
-
 function loadCurrentDate(){
   const iso = dateInput.value;
   if(!iso){ saveMsg.textContent = "날짜부터 선택해."; return; }
@@ -690,7 +749,6 @@ function loadCurrentDate(){
   setFormData(rec);
   saveMsg.textContent = `불러옴: ${iso}`;
 }
-
 function loadPrevDay(){
   const iso = dateInput.value;
   if(!iso){ saveMsg.textContent = "날짜부터 선택해."; return; }
@@ -721,7 +779,7 @@ modeToggle.addEventListener("change", ()=>{
   if(viewMode) renderView();
 });
 
-/* ===== chart + tooltip ===== */
+/* ===== view state + chart ===== */
 const chart = document.getElementById("chart");
 const ctx = chart.getContext("2d");
 const tooltip = document.getElementById("tooltip");
@@ -736,7 +794,7 @@ let VIEW_STATE = {
   selectedPlants: new Set(Array.from({length:12},(_,i)=>i+1)),
   dates: [],
   all: {},
-  points: [], // for hit test
+  points: [],
   pinned: null
 };
 
@@ -744,7 +802,7 @@ function resizeCanvas(){
   const rect = chart.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
   chart.width = Math.floor(rect.width * dpr);
-  chart.height = Math.floor(340 * dpr);
+  chart.height = Math.floor(320 * dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 window.addEventListener("resize", ()=>{
@@ -809,8 +867,7 @@ function minMax(values){
   const pad = (max-min) * 0.08;
   return {min:min-pad, max:max+pad};
 }
-
-function drawYGrid(plot, min, max, ticks, labelX, isEc=false){
+function drawYGrid(plot, min, max, ticks, labelX, decimals=0){
   ctx.strokeStyle = "#eef2f4";
   ctx.fillStyle = "#6b7280";
   ctx.font = "12px system-ui";
@@ -821,12 +878,10 @@ function drawYGrid(plot, min, max, ticks, labelX, isEc=false){
     ctx.moveTo(plot.x0, y);
     ctx.lineTo(plot.x1, y);
     ctx.stroke();
-    const val = (min + t*(max-min));
-    const txt = isEc ? val.toFixed(2) : val.toFixed(0);
-    ctx.fillText(txt, labelX, y+4);
+    const val = (min + t*(max-min)).toFixed(decimals);
+    ctx.fillText(val, labelX, y+4);
   }
 }
-
 function seriesForPerPlant(metric){
   const dates = VIEW_STATE.dates;
   const selected = Array.from(VIEW_STATE.selectedPlants).sort((a,b)=>a-b);
@@ -835,35 +890,36 @@ function seriesForPerPlant(metric){
     return { name:`${plantId}번`, values, color: palette[(plantId-1)%palette.length], axis:"left" };
   });
 }
-
+function computeConsumptionForDate(all, iso){
+  const prevIso = isoMinusDays(iso, 1);
+  const prev = all[prevIso]?.tankWeight || {};
+  const cur = all[iso]?.tankWeight || {};
+  return {
+    left: (prev.left != null && cur.left != null) ? (prev.left - cur.left) : null,
+    right:(prev.right != null && cur.right != null) ? (prev.right - cur.right) : null
+  };
+}
 function seriesForWaterEc(){
   const all = VIEW_STATE.all;
   const dates = VIEW_STATE.dates;
 
-  // compute consumption per date (needs prev)
-  const consL = dates.map(d=>{
-    const c = computeConsumptionForDate(all, d);
-    return c.left;
-  });
-  const consR = dates.map(d=>{
-    const c = computeConsumptionForDate(all, d);
-    return c.right;
-  });
-  const ecL = dates.map(d => all[d]?.ec?.left ?? null);
-  const ecR = dates.map(d => all[d]?.ec?.right ?? null);
+  const consL = dates.map(d => computeConsumptionForDate(all, d).left);
+  const consR = dates.map(d => computeConsumptionForDate(all, d).right);
+  const eL = dates.map(d => all[d]?.ec?.left ?? null);
+  const eR = dates.map(d => all[d]?.ec?.right ?? null);
 
   const out = [];
   if(WATER_EC_TOGGLES.waterL) out.push({name:"물 소비 좌측", values:consL, color:"#2F5D50", axis:"left"});
   if(WATER_EC_TOGGLES.waterR) out.push({name:"물 소비 우측", values:consR, color:"#A73745", axis:"left"});
-  if(WATER_EC_TOGGLES.ecL) out.push({name:"EC 좌측", values:ecL, color:"#3B82F6", axis:"right"});
-  if(WATER_EC_TOGGLES.ecR) out.push({name:"EC 우측", values:ecR, color:"#8B5CF6", axis:"right"});
+  if(WATER_EC_TOGGLES.ecL) out.push({name:"EC 좌측", values:eL, color:"#3B82F6", axis:"right"});
+  if(WATER_EC_TOGGLES.ecR) out.push({name:"EC 우측", values:eR, color:"#8B5CF6", axis:"right"});
   return out;
 }
 
 function drawChart(){
   resizeCanvas();
   const w = chart.getBoundingClientRect().width;
-  const h = 340;
+  const h = 320;
 
   const plot = { x0: 70, y0: 30, x1: w - 55, y1: h - 55 };
 
@@ -876,7 +932,6 @@ function drawChart(){
 
   const dates = VIEW_STATE.dates;
   VIEW_STATE.points = [];
-  VIEW_STATE.pinned = VIEW_STATE.pinned; // keep pinned if possible
 
   if(dates.length === 0){
     ctx.fillStyle = "#6b7280";
@@ -896,7 +951,7 @@ function drawChart(){
       hideTooltip();
       return;
     }
-  }else if(VIEW_STATE.metric === "waterEc"){
+  }else{
     series = seriesForWaterEc();
     if(series.length === 0){
       ctx.fillStyle = "#6b7280";
@@ -910,7 +965,6 @@ function drawChart(){
   const n = dates.length;
   const xFor = (idx) => (n===1) ? (plot.x0 + plot.x1)/2 : plot.x0 + (idx/(n-1))*(plot.x1-plot.x0);
 
-  // axis ranges
   const leftVals = series.filter(s=>s.axis==="left").flatMap(s=>s.values);
   const rightVals = series.filter(s=>s.axis==="right").flatMap(s=>s.values);
 
@@ -926,32 +980,30 @@ function drawChart(){
     return plot.y1 - t*(plot.y1-plot.y0);
   };
 
-  // left grid + labels
-  drawYGrid(plot, leftMM.min, leftMM.max, 5, 10, false);
+  drawYGrid(plot, leftMM.min, leftMM.max, 5, 10, 0);
 
-  // right axis labels/grid (light)
   if(rightMM){
-    ctx.strokeStyle = "rgba(238,242,244,.65)";
+    ctx.strokeStyle = "#cfd6dd";
+    ctx.beginPath();
+    ctx.moveTo(plot.x1, plot.y0);
+    ctx.lineTo(plot.x1, plot.y1);
+    ctx.stroke();
+
     ctx.fillStyle = "#6b7280";
     ctx.font = "12px system-ui";
     const ticks = 5;
     for(let i=0;i<=ticks;i++){
       const t = i / ticks;
       const y = plot.y1 - t*(plot.y1-plot.y0);
-      // right axis line ticks only
       ctx.beginPath();
       ctx.moveTo(plot.x1, y);
       ctx.lineTo(plot.x1+6, y);
+      ctx.strokeStyle = "#cfd6dd";
       ctx.stroke();
+
       const val = (rightMM.min + t*(rightMM.max-rightMM.min)).toFixed(2);
       ctx.fillText(val, plot.x1 + 10, y+4);
     }
-    // right axis line
-    ctx.strokeStyle = "#cfd6dd";
-    ctx.beginPath();
-    ctx.moveTo(plot.x1, plot.y0);
-    ctx.lineTo(plot.x1, plot.y1);
-    ctx.stroke();
   }
 
   // x labels
@@ -965,7 +1017,7 @@ function drawChart(){
     ctx.fillText(label, x-14, h-28);
   }
 
-  // draw series
+  // series
   for(const s of series){
     const color = s.color || "#2F5D50";
     ctx.strokeStyle = color;
@@ -985,7 +1037,6 @@ function drawChart(){
     }
     ctx.stroke();
 
-    // points
     ctx.fillStyle = color;
     for(let i=0;i<n;i++){
       const v = s.values[i];
@@ -1064,7 +1115,7 @@ function hideTooltip(){
 }
 
 chart.addEventListener("mousemove", (evt)=>{
-  if(VIEW_STATE.pinned) return; // pinned = click fixed
+  if(VIEW_STATE.pinned) return;
   const pos = canvasPos(evt);
   const p = findPoint(pos.x, pos.y);
   if(p) showTooltip(p, evt.clientX, evt.clientY);
@@ -1081,7 +1132,6 @@ chart.addEventListener("click", (evt)=>{
     hideTooltip();
     return;
   }
-  // toggle pin
   if(VIEW_STATE.pinned && VIEW_STATE.pinned.date === p.date && VIEW_STATE.pinned.series === p.series && VIEW_STATE.pinned.value === p.value){
     VIEW_STATE.pinned = null;
     hideTooltip();
@@ -1092,7 +1142,7 @@ chart.addEventListener("click", (evt)=>{
 });
 
 /* ===== tables ===== */
-function buildMatrixTable(type){
+function buildMatrixTableBool(type){
   const all = VIEW_STATE.all;
   const dates = VIEW_STATE.dates;
 
@@ -1131,11 +1181,55 @@ function buildMatrixTable(type){
   return table;
 }
 
+function buildDroopTable(){
+  const all = VIEW_STATE.all;
+  const dates = VIEW_STATE.dates;
+
+  const table = document.createElement("table");
+  table.className = "matrix";
+
+  const thead = document.createElement("thead");
+  const hr = document.createElement("tr");
+  const th0 = document.createElement("th");
+  th0.textContent = "개체";
+  hr.appendChild(th0);
+  for(const d of dates){
+    const th = document.createElement("th");
+    th.textContent = d.slice(5);
+    hr.appendChild(th);
+  }
+  thead.appendChild(hr);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  for(let i=1;i<=12;i++){
+    const tr = document.createElement("tr");
+    const td0 = document.createElement("td");
+    td0.textContent = `${i}번`;
+    tr.appendChild(td0);
+
+    for(const d of dates){
+      const v = clampInt(all[d]?.plants?.[i]?.droop ?? null, 1, 5);
+      const td = document.createElement("td");
+      if(!v){
+        td.innerHTML = `<span class="droopEmpty"></span>`;
+      }else{
+        const c = droopColor(v);
+        td.innerHTML = `<span class="droopDot" style="background:${c};">${v}</span>`;
+      }
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  return table;
+}
+
 /* ===== memo dropdown list ===== */
 function renderMemoList(){
   const wrap = document.getElementById("memoList");
   wrap.innerHTML = "";
-  const dates = VIEW_STATE.dates.slice().reverse(); // 최신이 위
+  const dates = VIEW_STATE.dates.slice().reverse();
   for(const d of dates){
     const memo = (VIEW_STATE.all[d]?.memo || "").trim();
     const item = document.createElement("details");
@@ -1170,15 +1264,18 @@ function renderView(){
   // tables
   const flowerWrap = document.getElementById("flowerTableWrap");
   const fruitWrap = document.getElementById("fruitTableWrap");
+  const droopWrap = document.getElementById("droopTableWrap");
+
   flowerWrap.innerHTML = "";
   fruitWrap.innerHTML = "";
-  flowerWrap.appendChild(buildMatrixTable("flower"));
-  fruitWrap.appendChild(buildMatrixTable("fruit"));
+  droopWrap.innerHTML = "";
 
-  // memo dropdown list
+  flowerWrap.appendChild(buildMatrixTableBool("flower"));
+  fruitWrap.appendChild(buildMatrixTableBool("fruit"));
+  droopWrap.appendChild(buildDroopTable());
+
   renderMemoList();
 
-  // chart
   VIEW_STATE.selectedPlants = getSelectedPlants();
   updateFilterVisibility();
   drawChart();
@@ -1187,9 +1284,7 @@ function renderView(){
 /* ===== init ===== */
 dateInput.value = isoToday();
 
-document.getElementById("consumptionHint").addEventListener("click", ()=>{}); // no-op
-
-// auto load today
+// auto load today if exists
 const auto = loadByDate(dateInput.value);
 if(auto) setFormData(auto);
 updateConsumptionHint();
@@ -1197,8 +1292,13 @@ updateConsumptionHint();
 // default record mode
 modeToggle.checked = false;
 updateFilterVisibility();
+
+/* ===== PWA: service worker register ===== */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
-
-
