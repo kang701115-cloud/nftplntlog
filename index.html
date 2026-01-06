@@ -1,0 +1,1191 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>holistic nft tracking</title>
+<style>
+:root{
+  --bg:#ffffff;
+  --text:#1f2933;
+  --muted:#6b7280;
+  --primary:#2F5D50;
+  --accent:#6FAF9A;
+  --danger:#A73745;
+  --warning:#C97A3D;
+  --line:#e5e7eb;
+  --card:#f7faf9;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+.container{ max-width:1200px; margin:0 auto; padding:22px; }
+
+header{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:14px; margin-bottom:22px;
+}
+h1{ margin:0; font-size:34px; font-weight:500; letter-spacing:.2px; }
+
+.topRight{ display:flex; align-items:center; gap:14px; }
+.pill{
+  border:1px solid var(--line);
+  background:var(--card);
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:13px;
+  color:var(--muted);
+}
+
+.toggle{
+  display:flex; align-items:center; gap:8px;
+  font-size:14px; color:var(--muted);
+}
+.toggle input{
+  width:44px; height:24px; appearance:none; cursor:pointer;
+  background:#cfd6dd; border-radius:999px; position:relative;
+  border:1px solid var(--line);
+}
+.toggle input:checked{ background:var(--primary); }
+.toggle input::after{
+  content:""; position:absolute; top:2px; left:2px;
+  width:20px; height:20px; border-radius:50%;
+  background:#fff; transition:.18s;
+}
+.toggle input:checked::after{ left:22px; }
+
+.section{ margin-bottom:22px; }
+.label{ font-size:13px; color:var(--muted); margin-bottom:8px; }
+.row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
+
+.cell{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
+  background:#fff;
+}
+.cell label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+input[type="number"], input[type="date"], textarea, select{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  font-size:14px;
+  background:#fff;
+}
+input:focus, textarea:focus, select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(47,93,80,.14);
+}
+
+textarea{ min-height:110px; resize:vertical; }
+
+.actions{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+}
+button{
+  border:none;
+  padding:10px 14px;
+  border-radius:12px;
+  font-size:14px;
+  cursor:pointer;
+  background:var(--primary);
+  color:#fff;
+}
+button.secondary{
+  background:#fff;
+  border:1px solid var(--line);
+  color:var(--text);
+}
+button.secondary:hover{ border-color:var(--primary); }
+button:active{ transform:translateY(1px); }
+
+.smallNote{ font-size:12px; color:var(--muted); }
+.hidden{ display:none !important; }
+
+/* view */
+.viewCard{
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--card);
+  padding:14px;
+}
+.viewTop{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+  margin-bottom:10px;
+}
+.viewTopLeft{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+}
+.badge{
+  display:inline-flex; gap:6px; align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:#fff;
+  font-size:13px;
+}
+.badge b{ color:var(--primary); }
+
+.canvasWrap{
+  position:relative;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px;
+}
+canvas{ width:100%; height:340px; display:block; }
+.tooltip{
+  position:absolute;
+  pointer-events:none;
+  background:#0f172a;
+  color:#fff;
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:12px;
+  line-height:1.25;
+  opacity:0;
+  transform:translateY(-6px);
+  transition:opacity .08s, transform .08s;
+  max-width:220px;
+  box-shadow:0 10px 20px rgba(0,0,0,.18);
+}
+.tooltip.show{ opacity:1; transform:translateY(0); }
+.tooltip .tmuted{ color:#cbd5e1; }
+
+.filters{
+  margin-top:10px;
+  padding:10px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+}
+.filtersTitle{ font-size:13px; color:var(--muted); margin-bottom:8px; }
+.checkRow{ display:flex; flex-wrap:wrap; gap:10px; }
+.chk{
+  display:inline-flex; gap:6px; align-items:center;
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:13px;
+}
+.chk input{ width:16px; height:16px; }
+
+.tables{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+  margin-top:14px;
+}
+.tableWrap{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:auto;
+}
+.matrix{
+  border-collapse:collapse;
+  width:100%;
+  min-width:720px;
+}
+.matrix th, .matrix td{
+  border-bottom:1px solid var(--line);
+  border-right:1px solid var(--line);
+  padding:10px 10px;
+  text-align:center;
+  font-size:14px;
+  white-space:nowrap;
+}
+.matrix th:first-child, .matrix td:first-child{
+  position:sticky;
+  left:0;
+  background:#fff;
+  z-index:2;
+}
+.matrix thead th{
+  position:sticky;
+  top:0;
+  background:#fff;
+  z-index:3;
+  font-size:13px;
+  color:var(--muted);
+}
+.matrix tr:last-child td{ border-bottom:none; }
+.matrix td:last-child, .matrix th:last-child{ border-right:none; }
+
+.symbol{ font-size:18px; line-height:1; }
+.symOn{ color:var(--primary); }
+.symOff{ color:#c7d0d8; }
+
+/* memo dropdown list */
+.memoList{ margin-top:14px; }
+.memoItem{
+  border:1px solid #dbeafe;
+  background:#f1f5ff;
+  border-radius:12px;
+  overflow:hidden;
+  margin-bottom:10px;
+}
+.memoItem summary{
+  list-style:none;
+  cursor:pointer;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:#0f172a;
+  font-weight:600;
+}
+.memoItem summary::-webkit-details-marker{ display:none; }
+.memoItem .memoBody{
+  padding:12px 14px 14px;
+  border-top:1px solid rgba(2,6,23,.08);
+  color:#111827;
+  white-space:pre-wrap;
+}
+.memoArrow{
+  width:0; height:0;
+  border-left:8px solid #111827;
+  border-top:6px solid transparent;
+  border-bottom:6px solid transparent;
+  opacity:.7;
+  transition:transform .12s;
+}
+details[open] .memoArrow{ transform:rotate(90deg); }
+.memoEmpty{ color:#6b7280; }
+
+.inlineCalc{
+  margin-top:10px;
+  padding:10px 12px;
+  border:1px dashed rgba(47,93,80,.35);
+  border-radius:12px;
+  background:#f7fbfa;
+  font-size:13px;
+  color:#134e4a;
+}
+.inlineCalc b{ color:var(--primary); }
+
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <h1>holistic nft tracking</h1>
+  <div class="topRight">
+    <div class="pill">저장소: localStorage</div>
+    <div class="toggle">
+      기록하기
+      <input id="modeToggle" type="checkbox" />
+      기록보기
+    </div>
+  </div>
+</header>
+
+<!-- 기록하기 -->
+<section id="recordSection">
+  <div class="section">
+    <div class="label">날짜</div>
+    <div class="row">
+      <input id="dateInput" type="date" />
+      <div class="actions" style="justify-content:flex-end;">
+        <button class="secondary" id="loadPrevBtn" type="button">전날 기록 불러오기</button>
+        <button class="secondary" id="loadTodayBtn" type="button">이 날짜 기록 불러오기</button>
+      </div>
+    </div>
+    <div class="smallNote" style="margin-top:8px;">
+      전날 기록은 “날짜 - 1일” 데이터가 있을 때만 불러옴.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">물통 무게 (g)</div>
+    <div class="row">
+      <input id="tankLeft" placeholder="좌측" type="number" />
+      <input id="tankRight" placeholder="우측" type="number" />
+    </div>
+    <div class="inlineCalc" id="consumptionHint">
+      전날 물통무게랑 비교해서 <b>추정 물 소비량</b>을 표시할 거야. (저장 후 기록보기에서 그래프도 생성)
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">양액 농도 (EC)</div>
+    <div class="row">
+      <input id="ecLeft" placeholder="좌측" type="number" step="0.1" />
+      <input id="ecRight" placeholder="우측" type="number" step="0.1" />
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">엽수</div>
+    <div class="grid" id="leafGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">키 (cm)</div>
+    <div class="grid" id="heightGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">잎처짐 (1~5) — 그래프 제외</div>
+    <div class="grid" id="droopGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">착화 여부</div>
+    <div class="grid" id="flowerGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">착과 여부</div>
+    <div class="grid" id="fruitGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="label">관찰 메모</div>
+    <textarea id="memoInput" placeholder="서술형 입력란"></textarea>
+  </div>
+
+  <div class="actions">
+    <button id="saveBtn" type="button">기록 저장</button>
+    <button id="clearBtn" class="secondary" type="button">입력칸 비우기</button>
+    <span class="smallNote" id="saveMsg"></span>
+  </div>
+</section>
+
+<!-- 기록보기 -->
+<section id="viewSection" class="hidden">
+  <div class="viewCard">
+    <div class="viewTop">
+      <div class="viewTopLeft">
+        <span class="badge">기록 개수 <b id="countBadge">0</b></span>
+        <span class="badge">기간 <b id="rangeBadge">-</b></span>
+      </div>
+      <div class="viewTopLeft">
+        <select id="metricSelect">
+          <option value="leaf">엽수(개체별)</option>
+          <option value="height">키(개체별)</option>
+          <option value="waterEc">물 소비량 + EC (좌/우 같은 그래프)</option>
+        </select>
+        <button class="secondary" id="refreshViewBtn" type="button">새로고침</button>
+      </div>
+    </div>
+
+    <div class="canvasWrap">
+      <canvas id="chart"></canvas>
+      <div id="tooltip" class="tooltip"></div>
+    </div>
+
+    <!-- per-plant filter -->
+    <div class="filters" id="plantFilterBox">
+      <div class="filtersTitle">표시할 개체 선택 (1~12)</div>
+      <div class="checkRow" id="plantChecks"></div>
+      <div class="smallNote" style="margin-top:8px;">체크한 개체만 그래프에 그려짐.</div>
+    </div>
+
+    <!-- water+ec toggles -->
+    <div class="filters hidden" id="waterEcFilterBox">
+      <div class="filtersTitle">표시 토글</div>
+      <div class="checkRow" id="waterEcChecks"></div>
+      <div class="smallNote" style="margin-top:8px;">
+        물 소비량은 전날 대비 “물통무게 감소량(g)”으로 계산(=mL로 보면 대충 1g≈1mL 가정).
+      </div>
+    </div>
+
+    <div class="tables">
+      <div>
+        <div class="label" style="margin:10px 0 8px;">착화 여부 표</div>
+        <div class="tableWrap" id="flowerTableWrap"></div>
+      </div>
+      <div>
+        <div class="label" style="margin:10px 0 8px;">착과 여부 표</div>
+        <div class="tableWrap" id="fruitTableWrap"></div>
+      </div>
+    </div>
+
+    <div class="memoList" id="memoList"></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+/* ===== storage ===== */
+const STORAGE_KEY = "hnt_records_v2";
+
+function loadAll(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+  catch(e){ return {}; }
+}
+function saveAll(all){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+}
+function isoToday(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+function isoMinusDays(iso, days){
+  const d = new Date(iso + "T00:00:00");
+  d.setDate(d.getDate() - days);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+function toNum(v){
+  if(v === "" || v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+function getSortedDates(all){
+  return Object.keys(all).sort();
+}
+
+/* ===== build grids ===== */
+function makeNumberGrid(containerId, inputPrefix, options={}){
+  const grid = document.getElementById(containerId);
+  grid.innerHTML = "";
+  for(let i=1;i<=12;i++){
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    const minAttr = options.min != null ? `min="${options.min}"` : "";
+    const maxAttr = options.max != null ? `max="${options.max}"` : "";
+    const stepAttr = options.step != null ? `step="${options.step}"` : "";
+    cell.innerHTML = `
+      <label>${i}번</label>
+      <input id="${inputPrefix}${i}" type="number" ${minAttr} ${maxAttr} ${stepAttr} />
+    `;
+    grid.appendChild(cell);
+  }
+}
+function makeCheckGrid(containerId, inputPrefix){
+  const grid = document.getElementById(containerId);
+  grid.innerHTML = "";
+  for(let i=1;i<=12;i++){
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.innerHTML = `
+      <label>${i}번</label>
+      <div class="checkbox">
+        <input id="${inputPrefix}${i}" type="checkbox" />
+      </div>
+    `;
+    grid.appendChild(cell);
+  }
+}
+makeNumberGrid("leafGrid", "leaf_", {});
+makeNumberGrid("heightGrid", "height_", {});
+makeNumberGrid("droopGrid", "droop_", {min:1, max:5, step:1});
+makeCheckGrid("flowerGrid", "flower_");
+makeCheckGrid("fruitGrid", "fruit_");
+
+/* ===== plant filter ===== */
+const plantChecks = document.getElementById("plantChecks");
+function buildPlantChecks(){
+  plantChecks.innerHTML = "";
+  for(let i=1;i<=12;i++){
+    const wrap = document.createElement("label");
+    wrap.className = "chk";
+    wrap.innerHTML = `<input type="checkbox" data-plant="${i}" checked> ${i}번`;
+    plantChecks.appendChild(wrap);
+  }
+}
+buildPlantChecks();
+
+/* ===== water+ec toggle ===== */
+const waterEcChecksBox = document.getElementById("waterEcChecks");
+const WATER_EC_TOGGLES = {
+  waterL: true, waterR: true, ecL: true, ecR: true
+};
+function buildWaterEcChecks(){
+  waterEcChecksBox.innerHTML = "";
+  const items = [
+    {key:"waterL", label:"물 소비 좌측"},
+    {key:"waterR", label:"물 소비 우측"},
+    {key:"ecL", label:"EC 좌측"},
+    {key:"ecR", label:"EC 우측"},
+  ];
+  for(const it of items){
+    const el = document.createElement("label");
+    el.className = "chk";
+    el.innerHTML = `<input type="checkbox" data-key="${it.key}" ${WATER_EC_TOGGLES[it.key]?"checked":""}> ${it.label}`;
+    waterEcChecksBox.appendChild(el);
+  }
+}
+buildWaterEcChecks();
+waterEcChecksBox.addEventListener("change", ()=>{
+  waterEcChecksBox.querySelectorAll('input[type="checkbox"]').forEach(chk=>{
+    WATER_EC_TOGGLES[chk.dataset.key] = chk.checked;
+  });
+  drawChart();
+});
+
+/* ===== record form ===== */
+const dateInput = document.getElementById("dateInput");
+const tankLeft = document.getElementById("tankLeft");
+const tankRight = document.getElementById("tankRight");
+const ecLeft = document.getElementById("ecLeft");
+const ecRight = document.getElementById("ecRight");
+const memoInput = document.getElementById("memoInput");
+const saveMsg = document.getElementById("saveMsg");
+const consumptionHint = document.getElementById("consumptionHint");
+
+function loadByDate(iso){
+  const all = loadAll();
+  return all[iso] || null;
+}
+
+function getFormData(){
+  const plants = {};
+  for(let i=1;i<=12;i++){
+    plants[i] = {
+      leaf: toNum(document.getElementById(`leaf_${i}`).value),
+      height: toNum(document.getElementById(`height_${i}`).value),
+      droop: toNum(document.getElementById(`droop_${i}`).value),
+      flower: document.getElementById(`flower_${i}`).checked,
+      fruit: document.getElementById(`fruit_${i}`).checked,
+    };
+  }
+  return {
+    date: dateInput.value,
+    tankWeight: { left: toNum(tankLeft.value), right: toNum(tankRight.value) },
+    ec: { left: toNum(ecLeft.value), right: toNum(ecRight.value) },
+    plants,
+    memo: (memoInput.value || "").trim(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function setFormData(rec){
+  tankLeft.value = rec?.tankWeight?.left ?? "";
+  tankRight.value = rec?.tankWeight?.right ?? "";
+  ecLeft.value = rec?.ec?.left ?? "";
+  ecRight.value = rec?.ec?.right ?? "";
+  memoInput.value = rec?.memo ?? "";
+
+  for(let i=1;i<=12;i++){
+    const p = rec?.plants?.[i] || {};
+    document.getElementById(`leaf_${i}`).value = (p.leaf ?? "");
+    document.getElementById(`height_${i}`).value = (p.height ?? "");
+    document.getElementById(`droop_${i}`).value = (p.droop ?? "");
+    document.getElementById(`flower_${i}`).checked = !!p.flower;
+    document.getElementById(`fruit_${i}`).checked = !!p.fruit;
+  }
+  updateConsumptionHint(); // refresh
+}
+
+function clearForm(){
+  tankLeft.value = "";
+  tankRight.value = "";
+  ecLeft.value = "";
+  ecRight.value = "";
+  memoInput.value = "";
+  for(let i=1;i<=12;i++){
+    document.getElementById(`leaf_${i}`).value = "";
+    document.getElementById(`height_${i}`).value = "";
+    document.getElementById(`droop_${i}`).value = "";
+    document.getElementById(`flower_${i}`).checked = false;
+    document.getElementById(`fruit_${i}`).checked = false;
+  }
+  updateConsumptionHint();
+}
+
+function computeConsumptionForDate(all, iso){
+  // consumption = prevWeight - currentWeight (positive -> consumed)
+  const prevIso = isoMinusDays(iso, 1);
+  const prev = all[prevIso]?.tankWeight || {};
+  const cur = all[iso]?.tankWeight || {};
+  const out = { left: null, right: null, prevIso };
+
+  if(prev.left != null && cur.left != null) out.left = prev.left - cur.left;
+  if(prev.right != null && cur.right != null) out.right = prev.right - cur.right;
+  return out;
+}
+
+function updateConsumptionHint(){
+  const iso = dateInput.value;
+  if(!iso){
+    consumptionHint.innerHTML = `전날 물통무게랑 비교해서 <b>추정 물 소비량</b>을 표시할 거야.`;
+    return;
+  }
+  const all = loadAll();
+  const prevIso = isoMinusDays(iso, 1);
+  const prev = all[prevIso]?.tankWeight || {};
+  const curL = toNum(tankLeft.value);
+  const curR = toNum(tankRight.value);
+
+  const canL = (prev.left != null && curL != null);
+  const canR = (prev.right != null && curR != null);
+
+  const left = canL ? (prev.left - curL) : null;
+  const right = canR ? (prev.right - curR) : null;
+
+  const fmt = (v)=> {
+    if(v == null) return "-";
+    const sign = v >= 0 ? "" : "▲"; // 음수면 증가(보충)
+    const abs = Math.abs(v);
+    return `${sign}${abs.toFixed(0)} g`;
+  };
+
+  consumptionHint.innerHTML =
+    `전날(${prevIso}) 대비 추정 물 소비량: 좌측 <b>${fmt(left)}</b> / 우측 <b>${fmt(right)}</b>
+     <div class="smallNote" style="margin-top:6px;">
+       감소(+) = 소비, 증가(▲) = 보충/주입 등으로 무게가 늘어난 케이스.
+     </div>`;
+}
+
+[tankLeft, tankRight, dateInput].forEach(el=>{
+  el.addEventListener("input", updateConsumptionHint);
+  el.addEventListener("change", updateConsumptionHint);
+});
+
+function saveCurrent(){
+  const rec = getFormData();
+  if(!rec.date){
+    saveMsg.textContent = "날짜부터 선택해.";
+    return;
+  }
+  const all = loadAll();
+  all[rec.date] = rec;
+  saveAll(all);
+  saveMsg.textContent = `저장됨: ${rec.date}`;
+  updateConsumptionHint();
+}
+
+function loadCurrentDate(){
+  const iso = dateInput.value;
+  if(!iso){ saveMsg.textContent = "날짜부터 선택해."; return; }
+  const rec = loadByDate(iso);
+  if(!rec){ saveMsg.textContent = `기록 없음: ${iso}`; return; }
+  setFormData(rec);
+  saveMsg.textContent = `불러옴: ${iso}`;
+}
+
+function loadPrevDay(){
+  const iso = dateInput.value;
+  if(!iso){ saveMsg.textContent = "날짜부터 선택해."; return; }
+  const prevIso = isoMinusDays(iso, 1);
+  const rec = loadByDate(prevIso);
+  if(!rec){
+    saveMsg.textContent = `전날 기록 없음: ${prevIso}`;
+    return;
+  }
+  setFormData(rec);
+  saveMsg.textContent = `전날(${prevIso}) 기록 불러옴 → 현재 날짜(${iso})에 입력됨`;
+}
+
+document.getElementById("saveBtn").addEventListener("click", saveCurrent);
+document.getElementById("clearBtn").addEventListener("click", ()=>{ clearForm(); saveMsg.textContent=""; });
+document.getElementById("loadTodayBtn").addEventListener("click", loadCurrentDate);
+document.getElementById("loadPrevBtn").addEventListener("click", loadPrevDay);
+
+/* ===== mode ===== */
+const modeToggle = document.getElementById("modeToggle");
+const recordSection = document.getElementById("recordSection");
+const viewSection = document.getElementById("viewSection");
+
+modeToggle.addEventListener("change", ()=>{
+  const viewMode = modeToggle.checked;
+  recordSection.classList.toggle("hidden", viewMode);
+  viewSection.classList.toggle("hidden", !viewMode);
+  if(viewMode) renderView();
+});
+
+/* ===== chart + tooltip ===== */
+const chart = document.getElementById("chart");
+const ctx = chart.getContext("2d");
+const tooltip = document.getElementById("tooltip");
+
+const palette = [
+  "#2F5D50", "#A73745", "#C97A3D", "#3B82F6", "#8B5CF6", "#10B981",
+  "#F59E0B", "#EF4444", "#06B6D4", "#64748B", "#22C55E", "#E879F9"
+];
+
+let VIEW_STATE = {
+  metric: "leaf",
+  selectedPlants: new Set(Array.from({length:12},(_,i)=>i+1)),
+  dates: [],
+  all: {},
+  points: [], // for hit test
+  pinned: null
+};
+
+function resizeCanvas(){
+  const rect = chart.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  chart.width = Math.floor(rect.width * dpr);
+  chart.height = Math.floor(340 * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize", ()=>{
+  if(!viewSection.classList.contains("hidden")) { resizeCanvas(); drawChart(); }
+});
+
+function getSelectedPlants(){
+  const set = new Set();
+  plantChecks.querySelectorAll('input[type="checkbox"]').forEach(chk=>{
+    if(chk.checked) set.add(Number(chk.dataset.plant));
+  });
+  return set;
+}
+plantChecks.addEventListener("change", ()=>{
+  VIEW_STATE.selectedPlants = getSelectedPlants();
+  drawChart();
+});
+
+const metricSelect = document.getElementById("metricSelect");
+metricSelect.addEventListener("change", (e)=>{
+  VIEW_STATE.metric = e.target.value;
+  drawChart();
+  updateFilterVisibility();
+});
+document.getElementById("refreshViewBtn").addEventListener("click", renderView);
+
+function updateFilterVisibility(){
+  const perPlant = (VIEW_STATE.metric === "leaf" || VIEW_STATE.metric === "height");
+  document.getElementById("plantFilterBox").classList.toggle("hidden", !perPlant);
+  document.getElementById("waterEcFilterBox").classList.toggle("hidden", VIEW_STATE.metric !== "waterEc");
+}
+
+function drawAxes(w, h, plot, title){
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle = "#e5e7eb";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0.5,0.5,w-1,h-1);
+
+  ctx.strokeStyle = "#cfd6dd";
+  ctx.beginPath();
+  ctx.moveTo(plot.x0, plot.y0);
+  ctx.lineTo(plot.x0, plot.y1);
+  ctx.lineTo(plot.x1, plot.y1);
+  ctx.stroke();
+
+  ctx.fillStyle = "#1f2933";
+  ctx.font = "14px system-ui";
+  ctx.fillText(title, plot.x0, 18);
+}
+
+function minMax(values){
+  let min = Infinity, max = -Infinity;
+  for(const v of values){
+    if(v == null) continue;
+    if(v < min) min = v;
+    if(v > max) max = v;
+  }
+  if(min === Infinity){ min = 0; max = 1; }
+  if(min === max){ max = min + 1; }
+  const pad = (max-min) * 0.08;
+  return {min:min-pad, max:max+pad};
+}
+
+function drawYGrid(plot, min, max, ticks, labelX, isEc=false){
+  ctx.strokeStyle = "#eef2f4";
+  ctx.fillStyle = "#6b7280";
+  ctx.font = "12px system-ui";
+  for(let i=0;i<=ticks;i++){
+    const t = i / ticks;
+    const y = plot.y1 - t*(plot.y1-plot.y0);
+    ctx.beginPath();
+    ctx.moveTo(plot.x0, y);
+    ctx.lineTo(plot.x1, y);
+    ctx.stroke();
+    const val = (min + t*(max-min));
+    const txt = isEc ? val.toFixed(2) : val.toFixed(0);
+    ctx.fillText(txt, labelX, y+4);
+  }
+}
+
+function seriesForPerPlant(metric){
+  const dates = VIEW_STATE.dates;
+  const selected = Array.from(VIEW_STATE.selectedPlants).sort((a,b)=>a-b);
+  return selected.map((plantId)=>{
+    const values = dates.map(d => VIEW_STATE.all[d]?.plants?.[plantId]?.[metric] ?? null);
+    return { name:`${plantId}번`, values, color: palette[(plantId-1)%palette.length], axis:"left" };
+  });
+}
+
+function seriesForWaterEc(){
+  const all = VIEW_STATE.all;
+  const dates = VIEW_STATE.dates;
+
+  // compute consumption per date (needs prev)
+  const consL = dates.map(d=>{
+    const c = computeConsumptionForDate(all, d);
+    return c.left;
+  });
+  const consR = dates.map(d=>{
+    const c = computeConsumptionForDate(all, d);
+    return c.right;
+  });
+  const ecL = dates.map(d => all[d]?.ec?.left ?? null);
+  const ecR = dates.map(d => all[d]?.ec?.right ?? null);
+
+  const out = [];
+  if(WATER_EC_TOGGLES.waterL) out.push({name:"물 소비 좌측", values:consL, color:"#2F5D50", axis:"left"});
+  if(WATER_EC_TOGGLES.waterR) out.push({name:"물 소비 우측", values:consR, color:"#A73745", axis:"left"});
+  if(WATER_EC_TOGGLES.ecL) out.push({name:"EC 좌측", values:ecL, color:"#3B82F6", axis:"right"});
+  if(WATER_EC_TOGGLES.ecR) out.push({name:"EC 우측", values:ecR, color:"#8B5CF6", axis:"right"});
+  return out;
+}
+
+function drawChart(){
+  resizeCanvas();
+  const w = chart.getBoundingClientRect().width;
+  const h = 340;
+
+  const plot = { x0: 70, y0: 30, x1: w - 55, y1: h - 55 };
+
+  const titleMap = {
+    leaf:"엽수 (개체별)",
+    height:"키(cm) (개체별)",
+    waterEc:"물 소비량 + EC (좌/우 같은 그래프)"
+  };
+  drawAxes(w, h, plot, titleMap[VIEW_STATE.metric] || VIEW_STATE.metric);
+
+  const dates = VIEW_STATE.dates;
+  VIEW_STATE.points = [];
+  VIEW_STATE.pinned = VIEW_STATE.pinned; // keep pinned if possible
+
+  if(dates.length === 0){
+    ctx.fillStyle = "#6b7280";
+    ctx.font = "13px system-ui";
+    ctx.fillText("기록이 없어.", plot.x0, plot.y0 + 30);
+    hideTooltip();
+    return;
+  }
+
+  let series = [];
+  if(VIEW_STATE.metric === "leaf" || VIEW_STATE.metric === "height"){
+    series = seriesForPerPlant(VIEW_STATE.metric);
+    if(series.length === 0){
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "13px system-ui";
+      ctx.fillText("표시할 개체를 체크해.", plot.x0, plot.y0 + 30);
+      hideTooltip();
+      return;
+    }
+  }else if(VIEW_STATE.metric === "waterEc"){
+    series = seriesForWaterEc();
+    if(series.length === 0){
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "13px system-ui";
+      ctx.fillText("표시할 항목을 체크해.", plot.x0, plot.y0 + 30);
+      hideTooltip();
+      return;
+    }
+  }
+
+  const n = dates.length;
+  const xFor = (idx) => (n===1) ? (plot.x0 + plot.x1)/2 : plot.x0 + (idx/(n-1))*(plot.x1-plot.x0);
+
+  // axis ranges
+  const leftVals = series.filter(s=>s.axis==="left").flatMap(s=>s.values);
+  const rightVals = series.filter(s=>s.axis==="right").flatMap(s=>s.values);
+
+  const leftMM = minMax(leftVals.length ? leftVals : [0,1]);
+  const rightMM = rightVals.length ? minMax(rightVals) : null;
+
+  const yLeft = (v)=>{
+    const t = (v - leftMM.min) / (leftMM.max - leftMM.min);
+    return plot.y1 - t*(plot.y1-plot.y0);
+  };
+  const yRight = (v)=>{
+    const t = (v - rightMM.min) / (rightMM.max - rightMM.min);
+    return plot.y1 - t*(plot.y1-plot.y0);
+  };
+
+  // left grid + labels
+  drawYGrid(plot, leftMM.min, leftMM.max, 5, 10, false);
+
+  // right axis labels/grid (light)
+  if(rightMM){
+    ctx.strokeStyle = "rgba(238,242,244,.65)";
+    ctx.fillStyle = "#6b7280";
+    ctx.font = "12px system-ui";
+    const ticks = 5;
+    for(let i=0;i<=ticks;i++){
+      const t = i / ticks;
+      const y = plot.y1 - t*(plot.y1-plot.y0);
+      // right axis line ticks only
+      ctx.beginPath();
+      ctx.moveTo(plot.x1, y);
+      ctx.lineTo(plot.x1+6, y);
+      ctx.stroke();
+      const val = (rightMM.min + t*(rightMM.max-rightMM.min)).toFixed(2);
+      ctx.fillText(val, plot.x1 + 10, y+4);
+    }
+    // right axis line
+    ctx.strokeStyle = "#cfd6dd";
+    ctx.beginPath();
+    ctx.moveTo(plot.x1, plot.y0);
+    ctx.lineTo(plot.x1, plot.y1);
+    ctx.stroke();
+  }
+
+  // x labels
+  ctx.fillStyle = "#6b7280";
+  ctx.font = "11px system-ui";
+  const maxLabels = 8;
+  const step = Math.max(1, Math.ceil(n / maxLabels));
+  for(let i=0;i<n;i+=step){
+    const x = xFor(i);
+    const label = dates[i].slice(5);
+    ctx.fillText(label, x-14, h-28);
+  }
+
+  // draw series
+  for(const s of series){
+    const color = s.color || "#2F5D50";
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    let started = false;
+    for(let i=0;i<n;i++){
+      const v = s.values[i];
+      if(v == null){
+        started = false;
+        continue;
+      }
+      const x = xFor(i);
+      const y = (s.axis==="right" && rightMM) ? yRight(v) : yLeft(v);
+      if(!started){ ctx.moveTo(x,y); started = true; }
+      else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // points
+    ctx.fillStyle = color;
+    for(let i=0;i<n;i++){
+      const v = s.values[i];
+      if(v == null) continue;
+      const x = xFor(i);
+      const y = (s.axis==="right" && rightMM) ? yRight(v) : yLeft(v);
+      ctx.beginPath();
+      ctx.arc(x,y,3.5,0,Math.PI*2);
+      ctx.fill();
+
+      VIEW_STATE.points.push({
+        x, y, r: 7,
+        date: dates[i],
+        series: s.name,
+        value: v,
+        axis: s.axis
+      });
+    }
+  }
+
+  // legend
+  let lx = plot.x1 - 220;
+  let ly = 18;
+  ctx.font = "12px system-ui";
+  for(const s of series.slice(0,9)){
+    ctx.fillStyle = s.color;
+    ctx.fillRect(lx, ly-9, 10, 10);
+    ctx.fillStyle = "#1f2933";
+    ctx.fillText(s.name, lx+14, ly);
+    ly += 16;
+  }
+  if(series.length > 9){
+    ctx.fillStyle = "#6b7280";
+    ctx.fillText(`+${series.length-9}개`, lx, ly);
+  }
+}
+
+/* ===== tooltip hit test ===== */
+function canvasPos(evt){
+  const rect = chart.getBoundingClientRect();
+  return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+}
+function findPoint(px, py){
+  let best = null;
+  let bestD = Infinity;
+  for(const p of VIEW_STATE.points){
+    const dx = px - p.x;
+    const dy = py - p.y;
+    const d = Math.sqrt(dx*dx + dy*dy);
+    if(d <= p.r && d < bestD){
+      best = p; bestD = d;
+    }
+  }
+  return best;
+}
+function showTooltip(p, clientX, clientY){
+  const rect = chart.getBoundingClientRect();
+  const x = (clientX - rect.left) + 12;
+  const y = (clientY - rect.top) - 10;
+
+  const isEc = (p.axis === "right") || String(p.series).includes("EC");
+  const val = isEc ? Number(p.value).toFixed(2) : Number(p.value).toFixed(0);
+  const unit = isEc ? "mS/cm" : (String(p.series).includes("물 소비") ? "g" : "");
+
+  tooltip.innerHTML = `
+    <div><b>${p.series}</b></div>
+    <div class="tmuted">${p.date}</div>
+    <div style="margin-top:6px;">값: <b>${val}${unit ? " " + unit : ""}</b></div>
+  `;
+  tooltip.style.left = Math.max(8, Math.min(x, rect.width - 220)) + "px";
+  tooltip.style.top = Math.max(8, y) + "px";
+  tooltip.classList.add("show");
+}
+function hideTooltip(){
+  tooltip.classList.remove("show");
+}
+
+chart.addEventListener("mousemove", (evt)=>{
+  if(VIEW_STATE.pinned) return; // pinned = click fixed
+  const pos = canvasPos(evt);
+  const p = findPoint(pos.x, pos.y);
+  if(p) showTooltip(p, evt.clientX, evt.clientY);
+  else hideTooltip();
+});
+chart.addEventListener("mouseleave", ()=>{
+  if(!VIEW_STATE.pinned) hideTooltip();
+});
+chart.addEventListener("click", (evt)=>{
+  const pos = canvasPos(evt);
+  const p = findPoint(pos.x, pos.y);
+  if(!p){
+    VIEW_STATE.pinned = null;
+    hideTooltip();
+    return;
+  }
+  // toggle pin
+  if(VIEW_STATE.pinned && VIEW_STATE.pinned.date === p.date && VIEW_STATE.pinned.series === p.series && VIEW_STATE.pinned.value === p.value){
+    VIEW_STATE.pinned = null;
+    hideTooltip();
+  }else{
+    VIEW_STATE.pinned = p;
+    showTooltip(p, evt.clientX, evt.clientY);
+  }
+});
+
+/* ===== tables ===== */
+function buildMatrixTable(type){
+  const all = VIEW_STATE.all;
+  const dates = VIEW_STATE.dates;
+
+  const table = document.createElement("table");
+  table.className = "matrix";
+
+  const thead = document.createElement("thead");
+  const hr = document.createElement("tr");
+  const th0 = document.createElement("th");
+  th0.textContent = "개체";
+  hr.appendChild(th0);
+  for(const d of dates){
+    const th = document.createElement("th");
+    th.textContent = d.slice(5);
+    hr.appendChild(th);
+  }
+  thead.appendChild(hr);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  for(let i=1;i<=12;i++){
+    const tr = document.createElement("tr");
+    const td0 = document.createElement("td");
+    td0.textContent = `${i}번`;
+    tr.appendChild(td0);
+
+    for(const d of dates){
+      const v = !!all[d]?.plants?.[i]?.[type];
+      const td = document.createElement("td");
+      td.innerHTML = `<span class="symbol ${v ? "symOn":"symOff"}">${v ? "●":"○"}</span>`;
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  return table;
+}
+
+/* ===== memo dropdown list ===== */
+function renderMemoList(){
+  const wrap = document.getElementById("memoList");
+  wrap.innerHTML = "";
+  const dates = VIEW_STATE.dates.slice().reverse(); // 최신이 위
+  for(const d of dates){
+    const memo = (VIEW_STATE.all[d]?.memo || "").trim();
+    const item = document.createElement("details");
+    item.className = "memoItem";
+    item.innerHTML = `
+      <summary>
+        <span>${d}</span>
+        <span class="memoArrow"></span>
+      </summary>
+      <div class="memoBody">${memo ? escapeHtml(memo) : `<span class="memoEmpty">메모 없음</span>`}</div>
+    `;
+    wrap.appendChild(item);
+  }
+}
+function escapeHtml(s){
+  return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+}
+
+/* ===== render view ===== */
+function renderView(){
+  VIEW_STATE.all = loadAll();
+  VIEW_STATE.dates = getSortedDates(VIEW_STATE.all);
+
+  document.getElementById("countBadge").textContent = VIEW_STATE.dates.length;
+  if(VIEW_STATE.dates.length){
+    document.getElementById("rangeBadge").textContent =
+      `${VIEW_STATE.dates[0]} ~ ${VIEW_STATE.dates[VIEW_STATE.dates.length-1]}`;
+  }else{
+    document.getElementById("rangeBadge").textContent = "-";
+  }
+
+  // tables
+  const flowerWrap = document.getElementById("flowerTableWrap");
+  const fruitWrap = document.getElementById("fruitTableWrap");
+  flowerWrap.innerHTML = "";
+  fruitWrap.innerHTML = "";
+  flowerWrap.appendChild(buildMatrixTable("flower"));
+  fruitWrap.appendChild(buildMatrixTable("fruit"));
+
+  // memo dropdown list
+  renderMemoList();
+
+  // chart
+  VIEW_STATE.selectedPlants = getSelectedPlants();
+  updateFilterVisibility();
+  drawChart();
+}
+
+/* ===== init ===== */
+dateInput.value = isoToday();
+
+document.getElementById("consumptionHint").addEventListener("click", ()=>{}); // no-op
+
+// auto load today
+const auto = loadByDate(dateInput.value);
+if(auto) setFormData(auto);
+updateConsumptionHint();
+
+// default record mode
+modeToggle.checked = false;
+updateFilterVisibility();
+</script>
+</body>
+</html>
